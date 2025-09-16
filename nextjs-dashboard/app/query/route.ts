@@ -15,8 +15,7 @@
 
 export async function GET() {
   return ({
-    message:
-      '',
+    
   });
   try {
    	return Response.json(await listInvoices());
