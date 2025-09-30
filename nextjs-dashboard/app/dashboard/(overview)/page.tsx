@@ -1,20 +1,20 @@
-import { Card } from "@/app/ui/dashboard/cards";
-import RevenueChart from "@/app/ui/dashboard/revenue-chart";
-import LatestInvoices from "@/app/ui/dashboard/latest-invoices";
 import { lusitana } from "@/app/ui/fonts";
-import { fetchCardData } from "@/app/lib/data";
+import { fetchRevenue } from "@/app/lib/data";
 import { Suspense } from "react";
 import CardWrapper from "@/app/ui/dashboard/cards";
+import RevenueChart from "@/app/ui/dashboard/revenue-chart";
+import LatestInvoices from "@/app/ui/dashboard/latest-invoices";
+import ProgressCard from "@/app/ui/dashboard/ProgressCard";
+
 import {
   RevenueChartSkeleton,
   LatestInvoicesSkeleton,
   CardsSkeleton,
 } from "@/app/ui/skeletons";
 
-import ProgressCard from "@/app/ui/dashboard/ProgressCard";
-
 export default async function Page() {
-  const currentAmount = 7500; 
+  const revenue = await fetchRevenue(); 
+  const currentAmount = revenue.reduce((sum, month) => sum + month.revenue, 0);
   const goalAmount = 10000; 
 
   return (
@@ -27,12 +27,14 @@ export default async function Page() {
         <Suspense fallback={<CardsSkeleton />}>
           <CardWrapper />
         </Suspense>
-        <ProgressCard currentAmount={currentAmount} goalAmount={goalAmount} /> 
+
+        {/* Dodamo ProgressCard */}
+        <ProgressCard currentAmount={currentAmount} goalAmount={goalAmount} />
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
         <Suspense fallback={<RevenueChartSkeleton />}>
-          <RevenueChart />
+          <RevenueChart revenue={revenue} />
         </Suspense>
         <Suspense fallback={<LatestInvoicesSkeleton />}>
           <LatestInvoices />
