@@ -1,11 +1,10 @@
 import { lusitana } from "@/app/ui/fonts";
-import { fetchRevenue } from "@/app/lib/data";
+import { fetchCardData, fetchRevenue } from "@/app/lib/data";
 import { Suspense } from "react";
 import CardWrapper from "@/app/ui/dashboard/cards";
 import RevenueChart from "@/app/ui/dashboard/revenue-chart";
 import LatestInvoices from "@/app/ui/dashboard/latest-invoices";
 import ProgressCard from "@/app/ui/dashboard/ProgressCard";
-
 import {
   RevenueChartSkeleton,
   LatestInvoicesSkeleton,
@@ -13,8 +12,18 @@ import {
 } from "@/app/ui/skeletons";
 
 export default async function Page() {
-  const revenue = await fetchRevenue(); 
-  const currentAmount = revenue.reduce((sum, month) => sum + month.revenue, 0);
+  
+  const cardData = await fetchCardData();
+  const revenue = await fetchRevenue();
+
+  function parseAmount(amount: string | undefined): number {
+    if (!amount) return 0;
+    
+    return parseFloat(amount.replace(/[$,]/g, ""));
+  }
+
+  const currentAmount = parseAmount(cardData?.totalPaidInvoices);
+
   const goalAmount = 10000; 
 
   return (
@@ -23,19 +32,20 @@ export default async function Page() {
         Dashboard
       </h1>
 
+      
       <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         <Suspense fallback={<CardsSkeleton />}>
           <CardWrapper />
         </Suspense>
 
-        {/* Dodamo ProgressCard */}
         <ProgressCard currentAmount={currentAmount} goalAmount={goalAmount} />
-      </div>
+      </div> {/* <-- zapiralni div dodan */}
 
       <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-8">
         <Suspense fallback={<RevenueChartSkeleton />}>
           <RevenueChart revenue={revenue} />
         </Suspense>
+
         <Suspense fallback={<LatestInvoicesSkeleton />}>
           <LatestInvoices />
         </Suspense>
